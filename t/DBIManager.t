@@ -25,7 +25,8 @@ my $Password = 'password';
 
 {
     eval { Fey::DBIManager->new() };
-    like( $@, qr/Mandatory parameter/, 'new() with no parameters throws an error' );
+    like( $@, qr/\QYou must pass a dbh or dsn attribute to the Fey::DBIManager constructor/,
+          'new() with no parameters throws an error' );
 }
 
 {
@@ -85,7 +86,7 @@ EOF
 {
     my $man = Fey::DBIManager->new( dsn => $DSN );
 
-    ok( $man->{threaded}(), 'threads is true' );
+    ok( $man->_threaded(), 'threads is true' );
 }
 
 {
