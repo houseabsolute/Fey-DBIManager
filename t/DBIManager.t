@@ -1,7 +1,20 @@
 use strict;
 use warnings;
 
-use Test::More tests => 56;
+use Test::More;
+
+BEGIN
+{
+    unless ( eval { require DBD::Mock; 1 } )
+    {
+        plan skip_all => 'These tests require DBD::Mock.';
+    }
+    else
+    {
+        plan tests => 56;
+    }
+}
+
 use Fey::DBIManager;
 
 
