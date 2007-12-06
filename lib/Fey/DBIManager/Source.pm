@@ -3,8 +3,6 @@ package Fey::DBIManager::Source;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
-
 use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
 use MooseX::StrictConstructor;
 
