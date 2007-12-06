@@ -1,4 +1,4 @@
-package Fey::DBIManager;
+package Fey::DBIManager::Source;
 
 use strict;
 use warnings;
@@ -7,6 +7,12 @@ our $VERSION = '0.01';
 
 use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
 use MooseX::StrictConstructor;
+
+has 'name' =>
+    ( is      => 'ro',
+      isa     => 'Str',
+      default => 'default',
+    );
 
 has 'dbh' =>
     ( is        => 'rw',
@@ -22,7 +28,7 @@ has 'dbh' =>
 has 'name' =>
     ( is      => 'ro',
       isa     => 'Str',
-      default => 'main',
+      default => 'default',
     );
 
 has 'dsn' =>
@@ -100,7 +106,7 @@ sub BUILD
 
     return if $self->_has_dbh();
 
-    param_error 'You must pass a dbh or dsn attribute to the Fey::DBIManager constructor.'
+    param_error 'You must pass a dbh or dsn attribute to the Fey::DBIManager::Source constructor.'
         unless $self->_has_dsn();
 
     $self->_set_attributes( { %{ $self->attributes() },

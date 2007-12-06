@@ -11,11 +11,11 @@ BEGIN
     }
     else
     {
-        plan tests => 56;
+        plan tests => 58;
     }
 }
 
-use Fey::DBIManager;
+use Fey::DBIManager::Source;
 
 
 my $DSN = 'dbi:Mock:foo';
@@ -24,18 +24,19 @@ my $Password = 'password';
 
 
 {
-    eval { Fey::DBIManager->new() };
-    like( $@, qr/\QYou must pass a dbh or dsn attribute to the Fey::DBIManager constructor/,
+    eval { Fey::DBIManager::Source->new() };
+    like( $@, qr/\QYou must pass a dbh or dsn attribute to the Fey::DBIManager::Source constructor/,
           'new() with no parameters throws an error' );
 }
 
 {
-    my $man = Fey::DBIManager->new( dsn => $DSN );
+    my $source = Fey::DBIManager::Source->new( dsn => $DSN );
 
-    is( $man->dsn(), $DSN, 'dsn passed to new() is returned by dsn()' );
-    is( $man->username(), '', 'default username is empty string' );
-    is( $man->password(), '', 'default password is empty string' );
-    is_deeply( $man->attributes(),
+    is( $source->name(), 'default', 'source is named default' );
+    is( $source->dsn(), $DSN, 'dsn passed to new() is returned by dsn()' );
+    is( $source->username(), '', 'default username is empty string' );
+    is( $source->password(), '', 'default password is empty string' );
+    is_deeply( $source->attributes(),
                { AutoCommit         => 1,
                  RaiseError         => 1,
                  PrintError         => 0,
@@ -43,25 +44,25 @@ my $Password = 'password';
                  ShowErrorStatement => 1,
                },
                'check default attributes' );
-    ok( ! $man->post_connect(), 'no post_connect hook by default' );
-    ok( $man->auto_refresh(), 'auto_refresh defaults to true' );
-    ok( ! $man->{threaded}, 'threads is false' );
+    ok( ! $source->post_connect(), 'no post_connect hook by default' );
+    ok( $source->auto_refresh(), 'auto_refresh defaults to true' );
+    ok( ! $source->{threaded}, 'threads is false' );
 
     my $sub = sub {};
-    $man = Fey::DBIManager->new( dsn          => $DSN,
-                                 username     => $Username,
-                                 password     => $Password,
-                                 attributes   => { AutoCommit => 0,
-                                                   SomeThing  => 1,
-                                                 },
-                                 post_connect => $sub,
-                                 auto_refresh => 0,
-                               );
+    $source = Fey::DBIManager::Source->new( dsn          => $DSN,
+                                            username     => $Username,
+                                            password     => $Password,
+                                            attributes   => { AutoCommit => 0,
+                                                              SomeThing  => 1,
+                                                            },
+                                            post_connect => $sub,
+                                            auto_refresh => 0,
+                                          );
 
-    is( $man->dsn(), $DSN, 'dsn passed to new() is returned by dsn()' );
-    is( $man->username(), $Username, 'username is user' );
-    is( $man->password(), $Password, 'password is password' );
-    is_deeply( $man->attributes(),
+    is( $source->dsn(), $DSN, 'dsn passed to new() is returned by dsn()' );
+    is( $source->username(), $Username, 'username is user' );
+    is( $source->password(), $Password, 'password is password' );
+    is_deeply( $source->attributes(),
                { AutoCommit         => 1,
                  RaiseError         => 1,
                  PrintError         => 0,
@@ -70,8 +71,8 @@ my $Password = 'password';
                  SomeThing          => 1,
                },
                'attributes include values passed in, except AutoCommit is 1' );
-    is( $man->post_connect(), $sub, 'post_connect is set' );
-    ok( ! $man->auto_refresh(), 'auto_refresh  is false' );
+    is( $source->post_connect(), $sub, 'post_connect is set' );
+    ok( ! $source->auto_refresh(), 'auto_refresh  is false' );
 }
 
 eval <<'EOF';
@@ -84,9 +85,9 @@ eval <<'EOF';
 EOF
 
 {
-    my $man = Fey::DBIManager->new( dsn => $DSN );
+    my $source = Fey::DBIManager::Source->new( dsn => $DSN );
 
-    ok( $man->_threaded(), 'threads is true' );
+    ok( $source->_threaded(), 'threads is true' );
 }
 
 {
@@ -94,55 +95,55 @@ EOF
     my $count = 0;
     my $sub = sub { $post_connect = shift; $count++ };
 
-    my $man = Fey::DBIManager->new( dsn          => $DSN,
-                                    username     => $Username,
-                                    password     => $Password,
-                                    attributes   => { AutoCommit => 0,
-                                                    },
-                                    post_connect => $sub,
-                                  );
+    my $source = Fey::DBIManager::Source->new( dsn          => $DSN,
+                                               username     => $Username,
+                                               password     => $Password,
+                                               attributes   => { AutoCommit => 0,
+                                                               },
+                                               post_connect => $sub,
+                                             );
 
-    my $dbh = $man->dbh();
+    my $dbh = $source->dbh();
 
     test_dbh( $dbh, $post_connect );
 
     is( $count, 1, 'one DBI handle made so far' );
 
     local $$ = $$ + 1;
-    $man->_ensure_fresh_dbh();
+    $source->_ensure_fresh_dbh();
 
     ok( $dbh->{InactiveDestroy}, 'InactiveDestroy was set to true' );
 
-    $dbh = $man->dbh();
+    $dbh = $source->dbh();
     test_dbh( $dbh, $post_connect );
 
     is( $count, 2, 'new handle made when pid changes' );
 
     $threads::tid++;
-    $man->_ensure_fresh_dbh();
+    $source->_ensure_fresh_dbh();
 
     ok( ! $dbh->{InactiveDestroy}, 'InactiveDestroy was not set' );
 
-    $dbh = $man->dbh();
+    $dbh = $source->dbh();
     test_dbh( $dbh, $post_connect );
 
     is( $count, 3, 'new handle made when tid changes' );
 
-    $man->_ensure_fresh_dbh();
+    $source->_ensure_fresh_dbh();
     is( $count, 3, 'no new handle made with same pid & tid' );
 
     $dbh->{mock_can_connect} = 0;
-    $man->_ensure_fresh_dbh();
+    $source->_ensure_fresh_dbh();
 
     is( $count, 4, 'new handle made when Active is false' );
 
-    $dbh = $man->dbh();
+    $dbh = $source->dbh();
 
     $dbh->{mock_can_connect} = 1;
     no warnings 'redefine';
     local *DBD::Mock::db::ping = sub { return 0 };
 
-    $man->_ensure_fresh_dbh();
+    $source->_ensure_fresh_dbh();
     is( $count, 5, 'new handle made when ping returns false' );
 }
 
@@ -150,50 +151,57 @@ EOF
     my $count = 0;
     my $sub = sub { $count++ };
 
-    my $man = Fey::DBIManager->new( dsn          => $DSN,
-                                    username     => $Username,
-                                    password     => $Password,
-                                    attributes   => { AutoCommit => 0,
-                                                    },
-                                    auto_refresh => 0,
-                                    post_connect => $sub,
-                                  );
+    my $source = Fey::DBIManager::Source->new( dsn          => $DSN,
+                                               username     => $Username,
+                                               password     => $Password,
+                                               attributes   => { AutoCommit => 0,
+                                                               },
+                                               auto_refresh => 0,
+                                               post_connect => $sub,
+                                             );
 
-    my $dbh = $man->dbh();
+    my $dbh = $source->dbh();
 
     is( $count, 1, 'one DBI handle made so far' );
 
     local $$ = $$ + 1;
-    $dbh = $man->dbh();
+    $dbh = $source->dbh();
 
     is( $count, 1, 'no new handle when pid changes' );
 
     $threads::tid++;
-    $dbh = $man->dbh();
+    $dbh = $source->dbh();
 
     is( $count, 1, 'no new handle when tid changes' );
 
     $dbh->{mock_can_connect} = 0;
-    $dbh = $man->dbh();
+    $dbh = $source->dbh();
 
     is( $count, 1, 'no new handle made when Active is false' );
 
     $dbh->{mock_can_connect} = 1;
     no warnings 'redefine';
     local *DBD::Mock::db::ping = sub { return 0 };
-    $dbh = $man->dbh();
+    $dbh = $source->dbh();
 
     is( $count, 1, 'no new handle made when ping returns false' );
 }
 
 {
-    my $man = Fey::DBIManager->new( dsn => $DSN );
+    my $source = Fey::DBIManager::Source->new( dsn => $DSN );
 
     my $dbh = DBI->connect( $DSN, '', '', {} );
 
-    $man->set_dbh($dbh);
+    $source->set_dbh($dbh);
 
-    check_attributes( $man->dbh() );
+    check_attributes( $source->dbh() );
+}
+
+{
+    my $source = Fey::DBIManager::Source->new( dsn => $DSN, name => 'another' );
+
+    is( $source->name(), 'another',
+        'explicit name passed to constructor' );
 }
 
 sub test_dbh
