@@ -5,8 +5,8 @@ use warnings;
 
 our $VERSION = '0.01';
 
-use Moose::Policy 'Fey::Policy';
-use Moose;
+use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
+use MooseX::StrictConstructor;
 
 has 'dbh' =>
     ( is        => 'rw',
