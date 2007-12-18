@@ -88,9 +88,6 @@ has '_tid' =>
       init_arg => "\0_tid",
     );
 
-no Moose;
-__PACKAGE__->meta()->make_immutable();
-
 use DBI;
 use Fey::Exceptions qw( param_error );
 use Fey::Validate
@@ -211,6 +208,8 @@ sub _ensure_fresh_dbh
     $self->_make_dbh() unless $self->_has_dbh();
 }
 
+no Moose;
+__PACKAGE__->meta()->make_immutable();
 
 1;
 
