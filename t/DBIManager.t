@@ -1,9 +1,11 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 10;
 
 use Fey::DBIManager;
+use Fey::SQL::Select;
+use Fey::SQL::Update;
 
 {
     package Fey::DBIManager::Source;
@@ -54,4 +56,12 @@ use Fey::DBIManager;
     $man->add_source($source3);
     is( $man->default_source()->name(), 'default',
         q{default_source() returns the source named "default"} );
+
+    my $sql = Fey::SQL::Select->new();
+    is( $man->source_for_sql($sql), $man->default_source(),
+        q{source_for_sql() returns the default source} );
+
+    $sql = Fey::SQL::Update->new();
+    is( $man->source_for_sql($sql), $man->default_source(),
+        q{source_for_sql() returns the default source} );
 }

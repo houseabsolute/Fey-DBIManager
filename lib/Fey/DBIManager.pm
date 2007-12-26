@@ -87,6 +87,13 @@ before default_source =>
           return;
         };
 
+sub source_for_sql
+{
+    my $self = shift;
+
+    return $self->default_source();
+}
+
 no Moose;
 __PACKAGE__->meta()->make_immutable();
 
