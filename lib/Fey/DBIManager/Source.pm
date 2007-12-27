@@ -200,6 +200,7 @@ sub _ensure_fresh_dbh
         $self->_unset_dbh();
     }
 
+    # Maybe consider only pinging once ever X seconds/minutes?
     unless ( $dbh->{Active} && $dbh->ping() )
     {
         $self->_unset_dbh();
