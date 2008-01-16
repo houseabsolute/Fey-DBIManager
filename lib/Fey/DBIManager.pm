@@ -12,6 +12,7 @@ use Fey::DBIManager::Source;
 use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
 use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
+use Moose::Util::TypeConstraints;
 
 has _sources =>
     ( metaclass => 'Collection::Hash',
@@ -41,7 +42,16 @@ has default_source =>
 around 'add_source' =>
     sub { my $orig   = shift;
           my $self   = shift;
-          my $source = shift;
+
+          my $source;
+          if ( @_ > 1 )
+          {
+              $source = Fey::DBIManager::Source->new(@_);
+          }
+          else
+          {
+              $source = shift;
+          }
 
           my $name;
           if ( blessed $source && $source->can('name') )
@@ -95,6 +105,7 @@ sub source_for_sql
 }
 
 no Moose;
+no Moose::Util::TypeConstraints;
 __PACKAGE__->meta()->make_immutable();
 
 
