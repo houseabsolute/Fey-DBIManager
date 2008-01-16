@@ -4,11 +4,12 @@ use warnings;
 use Test::More tests => 10;
 
 use Fey::DBIManager;
-use Fey::SQL::Select;
-use Fey::SQL::Update;
+use Fey::SQL;
 
 {
     package Fey::DBIManager::Source;
+
+    no warnings 'redefine';
 
     sub new
     {
@@ -57,11 +58,11 @@ use Fey::SQL::Update;
     is( $man->default_source()->name(), 'default',
         q{default_source() returns the source named "default"} );
 
-    my $sql = Fey::SQL::Select->new();
+    my $sql = Fey::SQL->new_select();
     is( $man->source_for_sql($sql), $man->default_source(),
         q{source_for_sql() returns the default source} );
 
-    $sql = Fey::SQL::Update->new();
+    $sql = Fey::SQL->new_update();
     is( $man->source_for_sql($sql), $man->default_source(),
         q{source_for_sql() returns the default source} );
 }
