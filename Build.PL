@@ -6,8 +6,7 @@ use Module::Build;
 my $builder =
     Module::Build->new( module_name => 'Fey::DBIManager',
                         license     => 'perl',
-                        requires    => { 'Fey::Core'                              => 0,
-                                         'MooseX::StrictConstructor'              => 0,
+                        requires    => { 'MooseX::StrictConstructor'              => 0,
                                          'MooseX::Policy::SemiAffordanceAccessor' => 0,
                                        },
                         build_requires => { 'DBD::Mock'        => 0,
