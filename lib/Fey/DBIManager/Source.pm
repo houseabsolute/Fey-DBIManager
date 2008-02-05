@@ -290,8 +290,8 @@ the L<REQUIRED ATTRIBUTES>.
 
 =head1 REQUIRED ATTRIBUTES
 
-In order to provide consistency for C<Fey::Class>, sources enforce a
-set of standard attributes:
+In order to provide consistency for C<Fey::ORM>, sources enforce a set
+of standard attributes:
 
 =over 4
 
