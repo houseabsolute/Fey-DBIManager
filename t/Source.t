@@ -11,7 +11,7 @@ BEGIN
     }
     else
     {
-        plan tests => 58;
+        plan tests => 54;
     }
 }
 
@@ -185,16 +185,6 @@ EOF
     $dbh = $source->dbh();
 
     is( $count, 1, 'no new handle made when ping returns false' );
-}
-
-{
-    my $source = Fey::DBIManager::Source->new( dsn => $DSN );
-
-    my $dbh = DBI->connect( $DSN, '', '', {} );
-
-    $source->set_dbh($dbh);
-
-    check_attributes( $source->dbh() );
 }
 
 {

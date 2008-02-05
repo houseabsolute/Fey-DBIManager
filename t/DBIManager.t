@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 10;
+use Test::More tests => 11;
 
 use Fey::DBIManager;
 use Fey::SQL;
@@ -26,7 +26,7 @@ use Fey::SQL;
     my $man = Fey::DBIManager->new();
     isa_ok( $man, 'Fey::DBIManager' );
 
-    is( $man->source_count(), 0, 'manager has no sources' );
+    is( $man->_source_count(), 0, 'manager has no sources' );
 
     eval { $man->default_source(); };
     like( $@, qr/has no sources at all/,
@@ -36,7 +36,7 @@ use Fey::SQL;
 
     $man->add_source($source);
 
-    is( $man->source_count(), 1, 'manager has one source' );
+    is( $man->_source_count(), 1, 'manager has one source' );
 
     eval { $man->add_source($source); };
     like( $@, qr/\Qalready have a source named "not default"/,
@@ -65,4 +65,9 @@ use Fey::SQL;
     $sql = Fey::SQL->new_update();
     is( $man->source_for_sql($sql), $man->default_source(),
         q{source_for_sql() returns the default source} );
+
+    $man->remove_source('default');
+    eval { $man->default_source() };
+    like( $@, qr/has multiple sources/,
+          q{no default source with multiple sources, none named "default"} );
 }

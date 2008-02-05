@@ -23,21 +23,11 @@ has _sources =>
       provides  => { get    => 'get_source',
                      set    => 'add_source',
                      delete => 'remove_source',
-                     count  => 'source_count',
+                     count  => '_source_count',
                      exists => 'has_source',
                      values => 'sources',
                    },
     );
-
-has default_source =>
-    ( is        => 'rw',
-      isa       => 'Fey::DBIManager::Source',
-      predicate => 'has_default_source',
-      writer    => '_set_default_source',
-      clearer   => '_clear_default_source',
-      init_arg  => "\0default_source",
-    );
-
 
 around 'add_source' =>
     sub { my $orig   = shift;
@@ -64,38 +54,33 @@ around 'add_source' =>
 
           my $return = $self->$orig( $name => $source );
 
-          if ( $self->source_count() == 1 )
-          {
-              $self->_set_default_source( ( $self->sources() )[0] );
-          }
-          elsif ( $self->get_source('default') )
-          {
-              $self->_set_default_source( $self->get_source('default') );
-          }
-          else
-          {
-              $self->_clear_default_source();
-          }
-
           return $return;
         };
 
-before default_source =>
-    sub { my $self = shift;
+sub default_source
+{
+    my $self = shift;
 
-          return if $self->has_default_source();
+    if ( $self->_source_count() == 0 )
+    {
+        object_state_error 'This manager has no default source because it has no sources at all.';
+    }
+    elsif ( $self->_source_count() == 1 )
+    {
+        # Need to force scalar context for the return value
+        return ( $self->sources() )[0];
+    }
+    elsif ( my $source = $self->get_source('default') )
+    {
+        return $source;
+    }
+    else
+    {
+        object_state_error 'This manager has multiple sources, but none are named "default".';
+    }
 
-          if ( $self->source_count() == 0 )
-          {
-              object_state_error 'This manager has no default source because it has no sources at all.';
-          }
-          else
-          {
-              object_state_error 'This manager has multiple sources, but none are named "default".';
-          }
-
-          return;
-        };
+    return;
+}
 
 sub source_for_sql
 {
@@ -108,5 +93,100 @@ no Moose;
 no Moose::Util::TypeConstraints;
 __PACKAGE__->meta()->make_immutable();
 
-
 1;
+
+__END__
+
+=head1 NAME
+
+Fey::DBIManager - Manage a set of data sources
+
+=head1 SYNOPSIS
+
+  my $manager = Fey::DBIManager->new();
+
+  $manager->add_source( dbh => $dbh );
+
+  my $source = $manager->default_source();
+
+  my $source = $manager->source_for_sql($select_sql);
+
+=head1 DESCRIPTION
+
+C<Fey::DBIManager> manager a set of L<Fey::DBIManager::Source>
+objects, each of which in turn represents a single C<DBI> handle.
+
+It's main purpose is to provide a single interface to one or more data
+sources, allowing you to easily define your database connections in
+one spot.
+
+=head1 METHODS
+
+This class provides the following methods:
+
+=head2 Fey::DBIManager->new()
+
+Returns a new C<Fey::DBIManager> object.
+
+=head2 $manager->add_source(...)
+
+This method adds a new L<Fey::DBIManager::Source> object to the
+manager. It can either accept an instantiated
+L<Fey::DBIManager::Source> object, or a set of parameters needed to
+create a new source.
+
+Sources are identified by name, and if you try to add one that already
+exists in the manager, an error will be thrown.
+
+=head2 $manager->get_source($name)
+
+Given a source name, this returns the named source, if it exists in
+the manager.
+
+=head2 $manager->remove_source($name)
+
+Removes the named source, if it exists in the manager.
+
+=head2 $manager->has_source($name)
+
+Returns true if the manager has the named source.
+
+=head2 $manager->sources()
+
+Returns all of the source in the manager.
+
+=head2 $manager->default_source()
+
+This method returns the default source for the manager. If the manager
+has only one source, then this is the default. Otherwise it looks for
+a source named "default". If no such source exists, or if the manager
+has no sources at all, then an exception is thrown.
+
+=head2 $manager->source_for_sql($sql_object)
+
+This method accepts a single C<Fey::SQL> object and returns an
+appropriate source.
+
+By default, this method simply returns the default source. It exists
+to provide a spot for subclasses which want to do something more
+clever, such as use one source for reads and another for writes.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to
+C<bug-fey-dbimanager@rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org>.  I will be notified, and then you'll
+automatically be notified of progress on your bug as I make changes.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut

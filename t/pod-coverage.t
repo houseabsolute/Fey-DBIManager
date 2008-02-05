@@ -11,4 +11,6 @@ plan skip_all => 'Test::Pod::Coverage 1.04 and Pod::Coverage::Moose required for
     if $@;
 use Test::More;
 
-all_pod_coverage_ok( { coverage_class => 'Pod::Coverage::Moose' } );
+
+my @trustme = qr/^BUILD$/;
+all_pod_coverage_ok( { coverage_class => 'Pod::Coverage::Moose', trustme => \@trustme } );

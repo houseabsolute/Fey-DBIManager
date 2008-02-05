@@ -23,12 +23,6 @@ has 'dbh' =>
       default   => \&_make_dbh,
     );
 
-has 'name' =>
-    ( is      => 'ro',
-      isa     => 'Str',
-      default => 'default',
-    );
-
 has 'dsn' =>
     ( is        => 'ro',
       isa       => 'Str',
@@ -131,25 +125,6 @@ sub dbh
     return $self->_dbh();
 }
 
-{
-    my $spec = DBI_TYPE;
-    sub set_dbh
-    {
-        my $self  = shift;
-        my ($dbh) = validate_pos( @_, $spec );
-
-        my %attr = $self->_required_dbh_attributes();
-        while ( my ( $k, $v ) = each %attr )
-        {
-            $dbh->{$k} = $v;
-        }
-
-        $self->_set_pid_tid();
-
-        $self->_set_dbh($dbh);
-    }
-}
-
 sub _make_dbh
 {
     my $self = shift;
@@ -189,6 +164,7 @@ sub _ensure_fresh_dbh
     if ( $self->_pid() != $$ )
     {
         $dbh->{InactiveDestroy} = 1;
+        $dbh->disconnect();
         $self->_unset_dbh();
     }
 
@@ -197,12 +173,14 @@ sub _ensure_fresh_dbh
          $self->_tid() != threads->tid()
        )
     {
+        $dbh->disconnect();
         $self->_unset_dbh();
     }
 
     # Maybe consider only pinging once ever X seconds/minutes?
     unless ( $dbh->{Active} && $dbh->ping() )
     {
+        $dbh->disconnect();
         $self->_unset_dbh();
     }
 
@@ -215,3 +193,154 @@ __PACKAGE__->meta()->make_immutable();
 1;
 
 __END__
+
+=head1 NAME
+
+Fey::DBIManager::Source - Wraps a single DBI handle
+
+=head1 SYNOPSIS
+
+  my $source = Fey::DBIManager::Source->new( dbh => $dbh );
+
+  my $dbh = $source->dbh();
+
+=head1 DESCRIPTION
+
+A C<Fey::DBIManager::Source> object provides a wrapper around a C<DBI>
+handle which does things like ensure that handles are recreated
+properly after a fork.
+
+A source can be created from an existing DBI handle, or from
+parameters such as the dsn and authentication info.
+
+=head1 METHODS
+
+This class provides the following methods:
+
+=head2 Fey::DBIManager::Source->new(...)
+
+Creates a new C<Fey::DBIManager::Source> object. This method accepts a
+number of parameters.
+
+=over 4
+
+=item * name
+
+The name of the source. This defaults to "default", which cooperates
+nicely with L<Fey::DBIManager>.
+
+=item * dbh
+
+An already connected C<DBI> handle. Even if this is given, you still
+need to provide the relevant connection parameters such as "dsn".
+
+=item * dsn
+
+A C<DBI> DSN string. This is required.
+
+=item * username
+
+=item * password
+
+The username and password for the source. These both default to an
+empty string.
+
+=item * attributes
+
+A hash reference of attributes to be passed to C<< DBI->connect()
+>>. Note that some attributes are set for all handles. See L<REQUIRED
+ATTRIBUTES> for more details. This attribute is optional.
+
+=item * post_connect
+
+This is an optional subroutine reference which will be called after a
+handle is created with C<< DBI->connect() >>. This is a handy way to
+set connection info or to set driver-specific attributes like
+"mysql_enable_utf8" or "pg_auto_escape".
+
+=item * auto_refresh
+
+A boolean value. The default is true, which means that whenever you
+call C<< $source->dbh() >>, the source ensures that the database
+handle is still active. See L<HANDLE FRESHNESS> for more details.
+
+=head2 $source->dbh()
+
+Returns a database handle for the source. If you did not pass a handle
+to the constructor, this may create a new handle. If C<auto_refresh>
+is true, this may cause a new handle to be created. See L<HANDLE
+FRESHNESS> for more details.
+
+=head2 $source->dsn()
+
+=head2 $source->username()
+
+=head2 $source->password()
+
+=head2 $source->post_connect()
+
+=head2 $source->auto_connect()
+
+These methods simply return the value of the specified attribute.
+
+=head2 $source->attributes()
+
+This method reutrns attributes hash reference for the source. This
+will be a combination of any attributes passed to the constructor plus
+the L<REQUIRED ATTRIBUTES>.
+
+=head1 REQUIRED ATTRIBUTES
+
+In order to provide consistency for C<Fey::Class>, sources enforce a
+set of standard attributes:
+
+=over 4
+
+=item * AutoCommit => 1
+
+=item * RaiseError => 1
+
+=item * PrintError => 0
+
+=item * PrintWarn  => 1
+
+=item * ShowErrorStatement => 1
+
+=back
+
+=head1 HANDLE FRESHNESS
+
+If C<auto_refresh> is true for a source, then every call to C<<
+$source->dbh() >> incurs the cost of a "freshness" check. The upside
+of this is that it will just work in the face of forks, threading, and
+lost connections.
+
+First, we check to see if the pid has changed since the handle was
+created. If it has, we set C<InactiveDestroy> to true in the handle
+and disconnect it. If the thread has changed, we just disconnect the
+handle.
+
+Finally, we check C<< $dbh->{Active] >> and call C<< $dbh->ping()
+>>. If either of these is false, we disconnect the handle.
+
+If the handle is not fresh, a new one is created.
+
+=head1 AUTHOR
+
+Dave Rolsky, <autarch@urth.org>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to
+C<bug-fey-dbimanager@rt.cpan.org>, or through the web interface at
+L<http://rt.cpan.org>.  I will be notified, and then you'll
+automatically be notified of progress on your bug as I make changes.
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
