@@ -1,0 +1,76 @@
+NAME
+    Fey::DBIManager - Manage a set of data sources
+
+SYNOPSIS
+      my $manager = Fey::DBIManager->new();
+
+      $manager->add_source( dbh => $dbh );
+
+      my $source = $manager->default_source();
+
+      my $source = $manager->source_for_sql($select_sql);
+
+DESCRIPTION
+    "Fey::DBIManager" manager a set of Fey::DBIManager::Source objects, each
+    of which in turn represents a single "DBI" handle.
+
+    It's main purpose is to provide a single interface to one or more data
+    sources, allowing you to easily define your database connections in one
+    spot.
+
+METHODS
+    This class provides the following methods:
+
+  Fey::DBIManager->new()
+    Returns a new "Fey::DBIManager" object.
+
+  $manager->add_source(...)
+    This method adds a new Fey::DBIManager::Source object to the manager. It
+    can either accept an instantiated Fey::DBIManager::Source object, or a
+    set of parameters needed to create a new source.
+
+    Sources are identified by name, and if you try to add one that already
+    exists in the manager, an error will be thrown.
+
+  $manager->get_source($name)
+    Given a source name, this returns the named source, if it exists in the
+    manager.
+
+  $manager->remove_source($name)
+    Removes the named source, if it exists in the manager.
+
+  $manager->has_source($name)
+    Returns true if the manager has the named source.
+
+  $manager->sources()
+    Returns all of the source in the manager.
+
+  $manager->default_source()
+    This method returns the default source for the manager. If the manager
+    has only one source, then this is the default. Otherwise it looks for a
+    source named "default". If no such source exists, or if the manager has
+    no sources at all, then an exception is thrown.
+
+  $manager->source_for_sql($sql_object)
+    This method accepts a single "Fey::SQL" object and returns an
+    appropriate source.
+
+    By default, this method simply returns the default source. It exists to
+    provide a spot for subclasses which want to do something more clever,
+    such as use one source for reads and another for writes.
+
+AUTHOR
+    Dave Rolsky, <autarch@urth.org>
+
+BUGS
+    Please report any bugs or feature requests to
+    "bug-fey-dbimanager@rt.cpan.org", or through the web interface at
+    <http://rt.cpan.org>. I will be notified, and then you'll automatically
+    be notified of progress on your bug as I make changes.
+
+COPYRIGHT & LICENSE
+    Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
