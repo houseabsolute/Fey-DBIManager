@@ -99,7 +99,7 @@ __END__
 
 =head1 NAME
 
-Fey::DBIManager - Manage a set of data sources
+Fey::DBIManager - Manage a set of DBI handles
 
 =head1 SYNOPSIS
 
