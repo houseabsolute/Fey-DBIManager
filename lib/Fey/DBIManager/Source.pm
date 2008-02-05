@@ -261,6 +261,8 @@ A boolean value. The default is true, which means that whenever you
 call C<< $source->dbh() >>, the source ensures that the database
 handle is still active. See L<HANDLE FRESHNESS> for more details.
 
+=back
+
 =head2 $source->dbh()
 
 Returns a database handle for the source. If you did not pass a handle
