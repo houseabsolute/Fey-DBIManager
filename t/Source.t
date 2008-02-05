@@ -11,7 +11,7 @@ BEGIN
     }
     else
     {
-        plan tests => 54;
+        plan tests => 53;
     }
 }
 
@@ -22,12 +22,6 @@ my $DSN = 'dbi:Mock:foo';
 my $Username = 'user';
 my $Password = 'password';
 
-
-{
-    eval { Fey::DBIManager::Source->new() };
-    like( $@, qr/\QYou must pass a dbh or dsn attribute to the Fey::DBIManager::Source constructor/,
-          'new() with no parameters throws an error' );
-}
 
 {
     my $source = Fey::DBIManager::Source->new( dsn => $DSN );

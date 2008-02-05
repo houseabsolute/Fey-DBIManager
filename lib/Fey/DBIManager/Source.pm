@@ -24,9 +24,11 @@ has 'dbh' =>
     );
 
 has 'dsn' =>
-    ( is        => 'ro',
+    ( is        => 'rw',
       isa       => 'Str',
       predicate => '_has_dsn',
+      writer    => '_set_dsn',
+      required  => 1,
     );
 
 has 'username' =>
@@ -92,11 +94,6 @@ sub BUILD
 {
     my $self   = shift;
     my $params = shift;
-
-    return if $self->_has_dbh();
-
-    param_error 'You must pass a dbh or dsn attribute to the Fey::DBIManager::Source constructor.'
-        unless $self->_has_dsn();
 
     $self->_set_attributes( { %{ $self->attributes() },
                               $self->_required_dbh_attributes(),
