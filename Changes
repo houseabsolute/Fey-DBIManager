@@ -1,3 +1,9 @@
+0.03    2008-02-09
+
+- Add missing prereq for MooseX::AttributeHelpers. Reported by Ilmari
+  Vacklin.
+
+
 0.02    2008-02-09
 
 - Add Fey.pm as a prereq.
