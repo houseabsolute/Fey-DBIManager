@@ -7,6 +7,7 @@ my $builder =
     Module::Build->new( module_name => 'Fey::DBIManager',
                         license     => 'perl',
                         requires    => { 'Fey'                                    => 0,
+                                         'MooseX::AttributeHelpers'               => 0,
                                          'MooseX::StrictConstructor'              => 0,
                                          'MooseX::Policy::SemiAffordanceAccessor' => 0,
                                        },
