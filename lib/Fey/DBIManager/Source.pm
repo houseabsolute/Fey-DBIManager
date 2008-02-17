@@ -163,6 +163,13 @@ sub _check_nested_transactions
     my $allows_nested =
         eval
         {
+            # This error comes from DBI in its default implementation
+            # of begin_work(). There didn't seem to be a way to shut
+            # this off (PrintWarn does not help). Hopefully the
+            # message text won't change.
+            local $SIG{__WARN__}
+                = sub { warn @_ unless $_[0] =~ /Already in a transaction/ };
+
             $dbh->begin_work();
             $dbh->begin_work();
             $dbh->rollback();
