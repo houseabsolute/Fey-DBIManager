@@ -11,7 +11,7 @@ BEGIN
     }
     else
     {
-        plan tests => 53;
+        plan tests => 56;
     }
 }
 
@@ -186,6 +186,27 @@ EOF
 
     is( $source->name(), 'another',
         'explicit name passed to constructor' );
+}
+
+{
+    my $source = Fey::DBIManager::Source->new( dsn => $DSN );
+
+    ok( ! $source->allows_nested_transactions(),
+        'source allows nested transactions is false by default with DBD::Mock' );
+
+    ok( $source->dbh()->{AutoCommit},
+        'AutoCommit is true after checking allows_nested_transactions' );
+}
+
+{
+    my $source = Fey::DBIManager::Source->new( dsn => $DSN );
+
+    no warnings 'redefine';
+    local *DBD::Mock::db::begin_work = sub {};
+    local *DBD::Mock::db::rollback   = sub {};
+
+    ok( $source->allows_nested_transactions(),
+        'source allows nested transactions is true' );
 }
 
 sub test_dbh

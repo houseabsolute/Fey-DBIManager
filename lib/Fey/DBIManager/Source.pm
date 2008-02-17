@@ -23,6 +23,9 @@ has 'dbh' =>
       default   => \&_make_dbh,
     );
 
+after '_unset_dbh' =>
+    sub { $_[0]->_clear_supports_nested_transactions() };
+
 has 'dsn' =>
     ( is        => 'rw',
       isa       => 'Str',
@@ -59,6 +62,14 @@ has 'auto_refresh' =>
     ( is      => 'ro',
       isa     => 'Bool',
       default => 1,
+    );
+
+has 'allows_nested_transactions' =>
+    ( is      => 'ro',
+      isa     => 'Bool',
+      lazy    => 1,
+      default => \&_check_nested_transactions,
+      clearer => '_clear_supports_nested_transactions',
     );
 
 has '_threaded' =>
@@ -141,6 +152,30 @@ sub _make_dbh
     $self->_set_dbh($dbh);
 
     return $self->_dbh();
+}
+
+sub _check_nested_transactions
+{
+    my $self = shift;
+
+    my $dbh = $self->dbh();
+
+    my $allows_nested =
+        eval
+        {
+            $dbh->begin_work();
+            $dbh->begin_work();
+            $dbh->rollback();
+            $dbh->rollback();
+            1;
+        };
+
+    if ($@)
+    {
+        $dbh->rollback() unless $dbh->{AutoCommit};
+    }
+
+    return $allows_nested;
 }
 
 sub _set_pid_tid
@@ -287,6 +322,13 @@ These methods simply return the value of the specified attribute.
 This method reutrns attributes hash reference for the source. This
 will be a combination of any attributes passed to the constructor plus
 the L<REQUIRED ATTRIBUTES>.
+
+=head2 $source->allows_nested_transactions()
+
+Returns a boolean indicating whether or not the database to which the
+source connects supports nested transactions. It does this by trying
+to issue two calls to C<< $dbh->begin_work() >> followed by two calls
+to C<< $dbh->rollback() >> (in an eval block).
 
 =head1 REQUIRED ATTRIBUTES
 

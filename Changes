@@ -1,3 +1,9 @@
+0.04
+
+- Add $source->allows_nested_transactions() attribute (primarily for
+  the benefit off Fey::ORM).
+
+
 0.03    2008-02-09
 
 - Add missing prereq for MooseX::AttributeHelpers. Reported by Ilmari
