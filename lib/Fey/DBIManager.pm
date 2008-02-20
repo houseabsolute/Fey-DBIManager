@@ -19,7 +19,7 @@ has _sources =>
       is        => 'ro',
       isa       => 'HashRef[Fey::DBIManager::Source]',
       default   => sub { {} },
-      init_arg  => "\0_sources",
+      init_arg  => undef,
       provides  => { get    => 'get_source',
                      set    => 'add_source',
                      delete => 'remove_source',

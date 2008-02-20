@@ -77,22 +77,19 @@ has '_threaded' =>
       isa      => 'Bool',
       lazy     => 1,
       default  => sub { threads->can('tid') ? 1 : 0 },
-      # a hack to make this attribute hard to set via the constructor
-      init_arg => "\0_threaded",
+      init_arg => undef,
     );
 
 has '_pid' =>
     ( is       => 'rw',
       isa      => 'Num',
-      # a hack to make this attribute hard to set via the constructor
-      init_arg => "\0_pid",
+      init_arg => undef,
     );
 
 has '_tid' =>
     ( is       => 'rw',
       isa      => 'Num',
-      # a hack to make this attribute hard to set via the constructor
-      init_arg => "\0_tid",
+      init_arg => undef,
     );
 
 use DBI;
