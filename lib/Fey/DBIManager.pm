@@ -3,7 +3,7 @@ package Fey::DBIManager;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use Fey::Exceptions qw( object_state_error param_error );
 use Scalar::Util qw( blessed );
