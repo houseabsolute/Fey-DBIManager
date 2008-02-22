@@ -162,8 +162,8 @@ sub _check_nested_transactions
         {
             # This error comes from DBI in its default implementation
             # of begin_work(). There didn't seem to be a way to shut
-            # this off (PrintWarn does not help). Hopefully the
-            # message text won't change.
+            # this off (setting PrintWarn to false does not do
+            # it). Hopefully the message text won't change.
             local $SIG{__WARN__}
                 = sub { warn @_ unless $_[0] =~ /Already in a transaction/ };
 
