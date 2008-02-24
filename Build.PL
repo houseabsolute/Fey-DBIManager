@@ -13,7 +13,7 @@ my $builder =
                                          'MooseX::Policy::SemiAffordanceAccessor' => 0,
                                        },
                         build_requires => { 'DBD::Mock'  => 0,
-                                            'Fey::Test'  => 0,
+                                            'Fey::Test'  => 0.04,
                                             'Test::More' => 0,
                                           },
                         create_makefile_pl => 'passthrough',
