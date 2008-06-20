@@ -1,3 +1,10 @@
+0.06
+
+- Fixed a bug where if you passed a DBI handle to the constructor, it
+  should set the pid (so it can check for forking later), but it
+  didn't. This manifested as a warning in the tests.
+
+
 0.05    2008-05-25
 
 - Update prereqs to require the latest Moose modules. With some

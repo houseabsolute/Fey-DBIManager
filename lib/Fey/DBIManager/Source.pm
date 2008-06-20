@@ -108,6 +108,9 @@ sub BUILD
                             }
                           );
 
+    $self->_set_pid_tid()
+        if $self->_has_dbh();
+
     return $self;
 }
 
