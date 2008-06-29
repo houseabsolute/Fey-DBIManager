@@ -340,7 +340,7 @@ to C<< $dbh->rollback() >> (in an eval block).
 =head1 REQUIRED ATTRIBUTES
 
 In order to provide consistency for C<Fey::ORM>, sources enforce a set
-of standard attributes:
+of standard attributes on DBI handles:
 
 =over 4
 
