@@ -13,18 +13,17 @@ has 'name' =>
     );
 
 has 'dbh' =>
-    ( is        => 'rw',
-      isa       => 'DBI::db',
-      reader    => '_dbh',
-      writer    => '_set_dbh',
-      clearer   => '_unset_dbh',
-      predicate => '_has_dbh',
-      lazy      => 1,
-      default   => \&_make_dbh,
+    ( is         => 'rw',
+      isa        => 'DBI::db',
+      reader     => '_dbh',
+      writer     => '_set_dbh',
+      clearer    => '_unset_dbh',
+      predicate  => '_has_dbh',
+      lazy_build => 1,
     );
 
 after '_unset_dbh' =>
-    sub { $_[0]->_clear_supports_nested_transactions() };
+    sub { $_[0]->_clear_allows_nested_transactions() };
 
 has 'dsn' =>
     ( is        => 'rw',
@@ -65,19 +64,17 @@ has 'auto_refresh' =>
     );
 
 has 'allows_nested_transactions' =>
-    ( is      => 'ro',
-      isa     => 'Bool',
-      lazy    => 1,
-      default => \&_check_nested_transactions,
-      clearer => '_clear_supports_nested_transactions',
+    ( is         => 'ro',
+      isa        => 'Bool',
+      lazy_build => 1,
+      clearer    => '_clear_allows_nested_transactions',
     );
 
 has '_threaded' =>
-    ( is       => 'ro',
-      isa      => 'Bool',
-      lazy     => 1,
-      default  => sub { threads->can('tid') ? 1 : 0 },
-      init_arg => undef,
+    ( is         => 'ro',
+      isa        => 'Bool',
+      lazy_build => 1,
+      init_arg   => undef,
     );
 
 has '_pid' =>
@@ -133,7 +130,7 @@ sub dbh
     return $self->_dbh();
 }
 
-sub _make_dbh
+sub _build_dbh
 {
     my $self = shift;
 
@@ -154,7 +151,7 @@ sub _make_dbh
     return $self->_dbh();
 }
 
-sub _check_nested_transactions
+sub _build_allows_nested_transactions
 {
     my $self = shift;
 
@@ -183,6 +180,11 @@ sub _check_nested_transactions
     }
 
     return $allows_nested;
+}
+
+sub _build__threaded
+{
+    return threads->can('tid') ? 1 : 0;
 }
 
 sub _set_pid_tid
@@ -223,7 +225,7 @@ sub _ensure_fresh_dbh
         $self->_unset_dbh();
     }
 
-    $self->_make_dbh() unless $self->_has_dbh();
+    $self->_build_dbh() unless $self->_has_dbh();
 }
 
 no Moose;
