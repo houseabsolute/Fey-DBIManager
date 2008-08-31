@@ -3,7 +3,14 @@ package Fey::DBIManager::Source;
 use strict;
 use warnings;
 
-use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
+use DBI;
+use Fey::Exceptions qw( param_error );
+use Fey::Validate
+    qw( validate_pos DBI_TYPE );
+
+use Moose;
+use MooseX::SemiAffordanceAccessor;
+use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 
 has 'name' =>
@@ -88,11 +95,6 @@ has '_tid' =>
       isa      => 'Num',
       init_arg => undef,
     );
-
-use DBI;
-use Fey::Exceptions qw( param_error );
-use Fey::Validate
-    qw( validate_pos DBI_TYPE );
 
 
 sub BUILD
@@ -229,6 +231,7 @@ sub _ensure_fresh_dbh
 }
 
 no Moose;
+
 __PACKAGE__->meta()->make_immutable();
 
 1;

@@ -9,7 +9,9 @@ use Fey::Exceptions qw( object_state_error param_error );
 use Scalar::Util qw( blessed );
 
 use Fey::DBIManager::Source;
-use Moose::Policy 'MooseX::Policy::SemiAffordanceAccessor';
+
+use Moose;
+use MooseX::SemiAffordanceAccessor;
 use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
@@ -91,6 +93,7 @@ sub source_for_sql
 
 no Moose;
 no Moose::Util::TypeConstraints;
+
 __PACKAGE__->meta()->make_immutable();
 
 1;
