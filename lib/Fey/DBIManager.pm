@@ -10,7 +10,7 @@ use Scalar::Util qw( blessed );
 
 use Fey::DBIManager::Source;
 
-use Moose;
+use Moose 0.56;
 use MooseX::SemiAffordanceAccessor;
 use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;

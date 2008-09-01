@@ -1,3 +1,8 @@
+0.07    2008-09-01
+
+- Updates to work with the latest Fey and Moose modules.
+
+
 0.06    2008-06-22
 
 - Fixed a bug where if you passed a DBI handle to the constructor, it
