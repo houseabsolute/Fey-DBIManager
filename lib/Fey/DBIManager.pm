@@ -108,7 +108,7 @@ Fey::DBIManager - Manage a set of DBI handles
 
   my $manager = Fey::DBIManager->new();
 
-  $manager->add_source( dbh => $dbh );
+  $manager->add_source( dsn => 'dbi:Pg:dbname=MyDB' );
 
   my $source = $manager->default_source();
 
