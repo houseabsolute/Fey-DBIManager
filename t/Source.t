@@ -11,7 +11,7 @@ BEGIN
     }
     else
     {
-        plan tests => 56;
+        plan tests => 57;
     }
 }
 
@@ -207,6 +207,16 @@ EOF
 
     ok( $source->allows_nested_transactions(),
         'source allows nested transactions is true' );
+}
+
+SKIP:
+{
+    skip 'These tests require Test::Output', 1
+        unless eval "use Test::Output; 1";
+
+    stderr_is( sub { Fey::DBIManager::Source->new( dsn => $DSN )->_build_allows_nested_transactions() },
+               '',
+               'no warnings checking for nested transaction support with DBD::Mock' );
 }
 
 sub test_dbh

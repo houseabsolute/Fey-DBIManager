@@ -171,7 +171,7 @@ sub _build_allows_nested_transactions
             # The variant is for DBD::Mock, which has a slightly
             # different version of the text.
             local $SIG{__WARN__}
-                = sub { warn @_ unless $_[0] =~ /Already (?:with)in a transaction/i
+                = sub { warn @_ unless $_[0] =~ /Already (?:with)?in a transaction/i
                                     || $_[0] =~ /rollback ineffective/ };
 
             $dbh->begin_work();
