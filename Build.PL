@@ -12,7 +12,7 @@ my $builder =
                                       'MooseX::StrictConstructor'      => '0.07',
                                       'MooseX::SemiAffordanceAccessor' => '0.03',
                                     },
-                        build_requires => { 'DBD::Mock'  => '0',
+                        build_requires => { 'DBD::Mock'  => '1.38',
                                             'Fey::Test'  => '0.04',
                                             'Test::More' => '0',
                                           },
