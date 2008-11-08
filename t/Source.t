@@ -1,19 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More;
-
-BEGIN
-{
-    unless ( eval { require DBD::Mock; 1 } )
-    {
-        plan skip_all => 'These tests require DBD::Mock.';
-    }
-    else
-    {
-        plan tests => 57;
-    }
-}
+use Test::More tests => 58;
 
 use Fey::DBIManager::Source;
 
@@ -21,7 +9,6 @@ use Fey::DBIManager::Source;
 my $DSN = 'dbi:Mock:foo';
 my $Username = 'user';
 my $Password = 'password';
-
 
 {
     my $source = Fey::DBIManager::Source->new( dsn => $DSN );
@@ -40,7 +27,7 @@ my $Password = 'password';
                'check default attributes' );
     ok( ! $source->post_connect(), 'no post_connect hook by default' );
     ok( $source->auto_refresh(), 'auto_refresh defaults to true' );
-    ok( ! $source->{threaded}, 'threads is false' );
+    ok( ! $source->_threaded(), 'threads is false' );
 
     my $sub = sub {};
     $source = Fey::DBIManager::Source->new( dsn          => $DSN,
@@ -211,10 +198,13 @@ EOF
 
 SKIP:
 {
-    skip 'These tests require Test::Output', 1
+    skip 'These tests require Test::Output', 2
         unless eval "use Test::Output; 1";
 
-    stderr_is( sub { Fey::DBIManager::Source->new( dsn => $DSN )->_build_allows_nested_transactions() },
+    stderr_is( sub { ok( ! Fey::DBIManager::Source
+                               ->new( dsn => 'dbi:Mock:' )
+                               ->allows_nested_transactions(),
+                         'DBD::Mock does not support nested transactions' ) },
                '',
                'no warnings checking for nested transaction support with DBD::Mock' );
 }
