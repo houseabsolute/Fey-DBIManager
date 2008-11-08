@@ -107,8 +107,11 @@ sub BUILD
                             }
                           );
 
-    $self->_set_pid_tid()
-        if $self->_has_dbh();
+    if ( $self->_has_dbh() )
+    {
+        $self->_set_pid_tid();
+        $self->_apply_required_dbh_attributes();
+    }
 
     return $self;
 }
@@ -121,6 +124,18 @@ sub _required_dbh_attributes
              PrintWarn          => 1,
              ShowErrorStatement => 1,
            );
+}
+
+sub _apply_required_dbh_attributes
+{
+    my $self = shift;
+
+    my %attr = $self->_required_dbh_attributes();
+
+    for my $k ( sort keys %attr )
+    {
+        $self->dbh()->{$k} = $attr{$k};
+    }
 }
 
 sub dbh

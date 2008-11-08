@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 58;
+use Test::More tests => 66;
 
 use Fey::DBIManager::Source;
 
@@ -188,12 +188,30 @@ EOF
 {
     my $source = Fey::DBIManager::Source->new( dsn => $DSN );
 
-    no warnings 'redefine';
+    no warnings 'redefine', 'once';
     local *DBD::Mock::db::begin_work = sub {};
     local *DBD::Mock::db::rollback   = sub {};
 
     ok( $source->allows_nested_transactions(),
         'source allows nested transactions is true' );
+}
+
+{
+    my %attr = Fey::DBIManager::Source->_required_dbh_attributes();
+    my %bad_attr;
+
+    $bad_attr{$_} = $attr{$_} ? 0 : 1
+        for keys %attr;
+
+    my $dbh = DBI->connect( $DSN, '', '', \%bad_attr );
+    my $source = Fey::DBIManager::Source->new( dsn => $DSN, dbh => $dbh );
+
+    for my $k ( sort keys %attr )
+    {
+        my $actual_val = $source->dbh()->{$k};
+        ok( ( $attr{$k} ? $actual_val : ! $actual_val ),
+            "DBI attribute $k is set to required value for Source" );
+    }
 }
 
 SKIP:
@@ -202,7 +220,7 @@ SKIP:
         unless eval "use Test::Output; 1";
 
     stderr_is( sub { ok( ! Fey::DBIManager::Source
-                               ->new( dsn => 'dbi:Mock:' )
+                               ->new( dsn => $DSN )
                                ->allows_nested_transactions(),
                          'DBD::Mock does not support nested transactions' ) },
                '',
@@ -235,14 +253,13 @@ sub check_attributes
 
     my %expect = ( AutoCommit         => 1,
                    RaiseError         => 1,
-                   # DBD::Mock seems to lose this value when it's set after a handle is created (weird!)
-#                   PrintError         => 0,
+                   PrintError         => 0,
                    PrintWarn          => 1,
                    ShowErrorStatement => 1,
                  );
     for my $k ( sort keys %expect )
     {
-        is( $dbh->{$k}, $expect{$k},
-            "$k should be $expect{$k}" );
+        ok( ( $expect{$k} ? $dbh->{$k} : ! $dbh->{$k} ),
+            "$k should be " . ( $expect{$k} ? 'true' : 'false' ) );
     }
 }

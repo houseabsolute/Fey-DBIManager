@@ -1,3 +1,10 @@
+0.09    2008-11-08
+
+- When an existing database handle is passed to the constructor for
+  Fey::DBIManager::Source, it now sets some attribute values for that
+  handle.
+
+
 0.08    2008-11-07
 
 - Tweaks so that when checking if a database handle supports nested
