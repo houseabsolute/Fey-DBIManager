@@ -2,8 +2,9 @@
 \bRCS\b
 \bCVS\b
 ,v$
-\B\.svn\b
-\B\.cvsignore$
+^\.svn\b
+^\.cvsignore$
+^.hg
 
 # Avoid Makemaker generated and utility files.
 \bMakefile$
@@ -32,9 +33,9 @@
 
 # Avoid OS-specific files/dirs
 #   Mac OSX metadata
-\B\.DS_Store
+\b\.DS_Store
 #   Mac OSX SMB mount metadata files
-\B\._
+\b\._
 # Avoid archives of this distribution
 \bFey-DBIManager-[\d\.\_]+
 
