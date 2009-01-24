@@ -16,9 +16,14 @@ my $builder =
                                             'Fey::Test'  => '0.04',
                                             'Test::More' => '0',
                                           },
-                        create_makefile_pl => 'passthrough',
+                        create_makefile_pl => 'traditional',
                         create_readme      => 1,
                         sign               => 1,
+                        { resources => { homepage   => 'http://www.fey-project.org/',
+                                         bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=Fey',
+                                         repository => 'http://hg.urth.org/hg/Fey',
+                                       },
+                        },
                       );
 
 $builder->create_build_script();
