@@ -1,3 +1,9 @@
+0.10    2008-02-06
+
+- This module tried to load (but not use) a module no longer in the
+  core Fey distro, Fey::Validate.
+
+
 0.09    2008-11-08
 
 - When an existing database handle is passed to the constructor for
