@@ -5,8 +5,6 @@ use warnings;
 
 use DBI;
 use Fey::Exceptions qw( param_error );
-use Fey::Validate
-    qw( validate_pos DBI_TYPE );
 
 use Moose;
 use MooseX::SemiAffordanceAccessor;
