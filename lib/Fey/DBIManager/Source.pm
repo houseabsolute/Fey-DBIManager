@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+our $VERSION = '0.10';
+
 use DBI;
 use Fey::Exceptions qw( param_error );
 
