@@ -9,7 +9,6 @@ my $builder = Module::Build->new(
     requires    => {
         'Fey'                            => '0.12',
         'Moose'                          => '0.56',
-        'MooseX::AttributeHelpers'       => '0.13',
         'MooseX::StrictConstructor'      => '0.07',
         'MooseX::SemiAffordanceAccessor' => '0.03',
     },

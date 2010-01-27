@@ -12,23 +12,22 @@ use Fey::DBIManager::Source;
 
 use Moose 0.56;
 use MooseX::SemiAffordanceAccessor;
-use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
 
 has _sources => (
-    metaclass => 'Collection::Hash',
-    is        => 'ro',
-    isa       => 'HashRef[Fey::DBIManager::Source]',
-    default   => sub { {} },
-    init_arg  => undef,
-    provides  => {
-        get    => 'get_source',
-        set    => 'add_source',
-        delete => 'remove_source',
-        count  => '_source_count',
-        exists => 'has_source',
-        values => 'sources',
+    traits   => ['Hash'],
+    is       => 'ro',
+    isa      => 'HashRef[Fey::DBIManager::Source]',
+    default  => sub { {} },
+    init_arg => undef,
+    handles  => {
+        get_source    => 'get',
+        add_source    => 'set',
+        remove_source => 'delete',
+        _source_count => 'count',
+        has_source    => 'exists',
+        sources       => 'values',
     },
 );
 

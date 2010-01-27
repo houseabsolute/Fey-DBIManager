@@ -8,7 +8,6 @@ use Fey::Exceptions qw( param_error );
 
 use Moose;
 use MooseX::SemiAffordanceAccessor;
-use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 
 has 'name' => (
