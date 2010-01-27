@@ -335,7 +335,7 @@ These methods simply return the value of the specified attribute.
 
 =head2 $source->attributes()
 
-This method reutrns attributes hash reference for the source. This
+This method returns attributes hash reference for the source. This
 will be a combination of any attributes passed to the constructor plus
 the L<REQUIRED ATTRIBUTES>.
 
