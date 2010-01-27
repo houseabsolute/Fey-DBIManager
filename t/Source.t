@@ -88,7 +88,8 @@ EOF
         attributes => {
             AutoCommit => 0,
         },
-        post_connect => $sub,
+        post_connect  => $sub,
+        ping_interval => 0,
     );
 
     my $dbh = $source->dbh();

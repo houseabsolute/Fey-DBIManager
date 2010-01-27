@@ -4,6 +4,9 @@
 
 - Put the $VERSION in all modules.
 
+- Implemented a ping_interval attribute for sources. This defaults to 60
+  seconds. Based on a patch from Bryan Deeney. RT #46693.
+
 
 0.10    2009-02-06
 

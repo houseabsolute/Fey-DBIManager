@@ -95,6 +95,21 @@ has '_tid' => (
     init_arg => undef,
 );
 
+has 'ping_interval' => (
+    is      => 'ro',
+    isa     => 'Maybe[Int]',
+    default => 60,
+);
+
+has '_last_ping' => (
+    is       => 'rw',
+    isa      => 'Int',
+    default  => 0,
+    clearer  => '_clear_last_ping',
+    lazy     => 1,
+    init_arg => undef,
+);
+
 sub BUILD {
     my $self   = shift;
     my $params = shift;
@@ -225,13 +240,30 @@ sub _ensure_fresh_dbh {
         $self->_unset_dbh();
     }
 
-    # Maybe consider only pinging once ever X seconds/minutes?
-    unless ( $dbh->{Active} && $dbh->ping() ) {
+    unless ( $dbh->{Active} && $self->_ping_dbh() ) {
         $dbh->disconnect();
         $self->_unset_dbh();
     }
 
     $self->_build_dbh() unless $self->_has_dbh();
+}
+
+sub _ping_dbh {
+    my $self = shift;
+
+    my $now  = time();
+
+    return 1 unless defined $self->ping_interval();
+    return 1 if ( $now - $self->_last_ping() ) < $self->ping_interval();
+
+    if ( $self->_dbh()->ping() ) {
+        $self->_set_last_ping($now);
+        return 1;
+    }
+    else {
+        $self->_clear_last_ping();
+        return 0;
+    }
 }
 
 no Moose;
@@ -312,6 +344,19 @@ A boolean value. The default is true, which means that whenever you
 call C<< $source->dbh() >>, the source ensures that the database
 handle is still active. See L<HANDLE FRESHNESS> for more details.
 
+=item * ping_interval
+
+An integer value representing the minimum number of seconds between
+successive pings of the database handle. See L<HANDLE FRESHNESS> for
+more details. The default value is 60 (seconds).  A value of 0 causes
+the source to ping the database handle each time you call
+C<< $source->dbh() >>.
+
+If you explicitly set this value to C<undef>, then the database will never be
+pinged.
+
+Note that if "auto_refresh" is false, this attribute is meaningless.
+
 =back
 
 =head2 $source->dbh()
@@ -377,8 +422,13 @@ created. If it has, we set C<InactiveDestroy> to true in the handle
 and disconnect it. If the thread has changed, we just disconnect the
 handle.
 
-Finally, we check C<< $dbh->{Active] >> and call C<< $dbh->ping()
->>. If either of these is false, we disconnect the handle.
+Next, we check C<< $dbh->{Active] >> and, if this is false, we
+disconnect the handle.
+
+Finally, we check that the handle has responded to C<< $dbh->ping() >>
+within the past C<< $source->ping_interval() >> seconds.  If it hasn't,
+we call C<< $dbh->ping() >> and, if it returns false, we disconnect the
+handle.
 
 If the handle is not fresh, a new one is created.
 
@@ -395,7 +445,7 @@ automatically be notified of progress on your bug as I make changes.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2006-2008 Dave Rolsky, All Rights Reserved.
+Copyright 2006-2010 Dave Rolsky, All Rights Reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
