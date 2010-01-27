@@ -29,7 +29,7 @@ SKIP:
             )->_build_allows_nested_transactions();
         },
         '',
-        'no warnings checking for nested transaction support with DBD::Mock'
+        'no warnings checking for nested transaction support with DBD::SQLite'
     );
 }
 
