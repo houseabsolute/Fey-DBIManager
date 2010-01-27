@@ -3,6 +3,7 @@ use warnings;
 
 use Test::More;
 
+
 plan skip_all => 'This test is only run for the module author'
     unless -d '.hg' || $ENV{IS_MAINTAINER};
 
