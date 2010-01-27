@@ -15,11 +15,11 @@ for my $pm_file ( File::Find::Rule->file->name(qr/\.pm$/)->in('lib') ) {
     $versions{$stripped_file} = $mod->version;
 }
 
-my $moose_ver = $versions{'Fey/DBIManager.pm'};
+my $main_ver = $versions{'Fey/DBIManager.pm'};
 
 for my $module ( grep { $_ ne 'Fey/DBIManager.pm' } sort keys %versions ) {
     is(
-        $versions{$module}, $moose_ver,
+        $versions{$module}, $main_ver,
         "version for $module is the same as in Fey/DBIManager.pm"
     );
 }
