@@ -2,6 +2,7 @@ package Fey::DBIManager;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 our $VERSION = '0.10';
 
@@ -13,7 +14,6 @@ use Fey::DBIManager::Source;
 use Moose 0.90;
 use MooseX::SemiAffordanceAccessor;
 use MooseX::StrictConstructor;
-use Moose::Util::TypeConstraints;
 
 has _sources => (
     traits   => ['Hash'],
@@ -84,9 +84,6 @@ sub source_for_sql {
 
     return $self->default_source();
 }
-
-no Moose;
-no Moose::Util::TypeConstraints;
 
 __PACKAGE__->meta()->make_immutable();
 

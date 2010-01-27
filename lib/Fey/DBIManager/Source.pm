@@ -2,6 +2,7 @@ package Fey::DBIManager::Source;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 use DBI;
 use Fey::Exceptions qw( param_error );

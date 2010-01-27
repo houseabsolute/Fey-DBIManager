@@ -11,6 +11,7 @@ my $builder = Module::Build->new(
         'Moose'                          => '0.90',
         'MooseX::StrictConstructor'      => '0.07',
         'MooseX::SemiAffordanceAccessor' => '0.03',
+        'namespace::autoclean'           => '0',
     },
     build_requires => {
         'DBD::Mock'  => '1.38',
