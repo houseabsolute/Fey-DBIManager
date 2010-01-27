@@ -8,6 +8,7 @@ _build
 MANIFEST
 META.yml
 Makefile.PL
+MYMETA.yml
 README
 Debian_CPANTS.txt
 Makefile.PL
