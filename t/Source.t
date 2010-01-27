@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 66;
+use Test::More;
 
 use Fey::DBIManager::Source;
 
@@ -292,3 +292,5 @@ sub check_attributes {
         );
     }
 }
+
+done_testing();

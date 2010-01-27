@@ -6,8 +6,6 @@ use Test::More;
 use Fey::Test::SQLite;
 use Fey::DBIManager::Source;
 
-plan tests => 2;
-
 my $source = Fey::DBIManager::Source->new(
     dsn => Fey::Test::SQLite->dsn(),
     dbh => Fey::Test::SQLite->dbh(),
@@ -34,3 +32,5 @@ SKIP:
         'no warnings checking for nested transaction support with DBD::Mock'
     );
 }
+
+done_testing();

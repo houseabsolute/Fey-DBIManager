@@ -8,14 +8,14 @@ my $builder = Module::Build->new(
     license     => 'perl',
     requires    => {
         'Fey'                            => '0.12',
-        'Moose'                          => '0.56',
+        'Moose'                          => '0.90',
         'MooseX::StrictConstructor'      => '0.07',
         'MooseX::SemiAffordanceAccessor' => '0.03',
     },
     build_requires => {
         'DBD::Mock'  => '1.38',
         'Fey::Test'  => '0.04',
-        'Test::More' => '0',
+        'Test::More' => '0.88',
     },
     create_makefile_pl => 'traditional',
     create_readme      => 1,

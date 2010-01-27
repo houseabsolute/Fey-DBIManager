@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11;
+use Test::More;
 
 use Fey::DBIManager;
 use Fey::SQL;
@@ -86,3 +86,5 @@ use Fey::SQL;
         q{no default source with multiple sources, none named "default"}
     );
 }
+
+done_testing();
