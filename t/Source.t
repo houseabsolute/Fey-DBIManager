@@ -5,8 +5,7 @@ use Test::More tests => 66;
 
 use Fey::DBIManager::Source;
 
-
-my $DSN = 'dbi:Mock:foo';
+my $DSN      = 'dbi:Mock:foo';
 my $Username = 'user';
 my $Password = 'password';
 
@@ -17,43 +16,49 @@ my $Password = 'password';
     is( $source->dsn(), $DSN, 'dsn passed to new() is returned by dsn()' );
     is( $source->username(), '', 'default username is empty string' );
     is( $source->password(), '', 'default password is empty string' );
-    is_deeply( $source->attributes(),
-               { AutoCommit         => 1,
-                 RaiseError         => 1,
-                 PrintError         => 0,
-                 PrintWarn          => 1,
-                 ShowErrorStatement => 1,
-               },
-               'check default attributes' );
-    ok( ! $source->post_connect(), 'no post_connect hook by default' );
-    ok( $source->auto_refresh(), 'auto_refresh defaults to true' );
-    ok( ! $source->_threaded(), 'threads is false' );
+    is_deeply(
+        $source->attributes(), {
+            AutoCommit         => 1,
+            RaiseError         => 1,
+            PrintError         => 0,
+            PrintWarn          => 1,
+            ShowErrorStatement => 1,
+        },
+        'check default attributes'
+    );
+    ok( !$source->post_connect(), 'no post_connect hook by default' );
+    ok( $source->auto_refresh(),  'auto_refresh defaults to true' );
+    ok( !$source->_threaded(),    'threads is false' );
 
-    my $sub = sub {};
-    $source = Fey::DBIManager::Source->new( dsn          => $DSN,
-                                            username     => $Username,
-                                            password     => $Password,
-                                            attributes   => { AutoCommit => 0,
-                                                              SomeThing  => 1,
-                                                            },
-                                            post_connect => $sub,
-                                            auto_refresh => 0,
-                                          );
+    my $sub = sub { };
+    $source = Fey::DBIManager::Source->new(
+        dsn        => $DSN,
+        username   => $Username,
+        password   => $Password,
+        attributes => {
+            AutoCommit => 0,
+            SomeThing  => 1,
+        },
+        post_connect => $sub,
+        auto_refresh => 0,
+    );
 
     is( $source->dsn(), $DSN, 'dsn passed to new() is returned by dsn()' );
     is( $source->username(), $Username, 'username is user' );
     is( $source->password(), $Password, 'password is password' );
-    is_deeply( $source->attributes(),
-               { AutoCommit         => 1,
-                 RaiseError         => 1,
-                 PrintError         => 0,
-                 PrintWarn          => 1,
-                 ShowErrorStatement => 1,
-                 SomeThing          => 1,
-               },
-               'attributes include values passed in, except AutoCommit is 1' );
+    is_deeply(
+        $source->attributes(), {
+            AutoCommit         => 1,
+            RaiseError         => 1,
+            PrintError         => 0,
+            PrintWarn          => 1,
+            ShowErrorStatement => 1,
+            SomeThing          => 1,
+        },
+        'attributes include values passed in, except AutoCommit is 1'
+    );
     is( $source->post_connect(), $sub, 'post_connect is set' );
-    ok( ! $source->auto_refresh(), 'auto_refresh  is false' );
+    ok( !$source->auto_refresh(), 'auto_refresh  is false' );
 }
 
 eval <<'EOF';
@@ -73,16 +78,18 @@ EOF
 
 {
     my $post_connect = 0;
-    my $count = 0;
-    my $sub = sub { $post_connect = shift; $count++ };
+    my $count        = 0;
+    my $sub          = sub { $post_connect = shift; $count++ };
 
-    my $source = Fey::DBIManager::Source->new( dsn          => $DSN,
-                                               username     => $Username,
-                                               password     => $Password,
-                                               attributes   => { AutoCommit => 0,
-                                                               },
-                                               post_connect => $sub,
-                                             );
+    my $source = Fey::DBIManager::Source->new(
+        dsn        => $DSN,
+        username   => $Username,
+        password   => $Password,
+        attributes => {
+            AutoCommit => 0,
+        },
+        post_connect => $sub,
+    );
 
     my $dbh = $source->dbh();
 
@@ -103,7 +110,7 @@ EOF
     $threads::tid++;
     $source->_ensure_fresh_dbh();
 
-    ok( ! $dbh->{InactiveDestroy}, 'InactiveDestroy was not set' );
+    ok( !$dbh->{InactiveDestroy}, 'InactiveDestroy was not set' );
 
     $dbh = $source->dbh();
     test_dbh( $dbh, $post_connect );
@@ -132,14 +139,16 @@ EOF
     my $count = 0;
     my $sub = sub { $count++ };
 
-    my $source = Fey::DBIManager::Source->new( dsn          => $DSN,
-                                               username     => $Username,
-                                               password     => $Password,
-                                               attributes   => { AutoCommit => 0,
-                                                               },
-                                               auto_refresh => 0,
-                                               post_connect => $sub,
-                                             );
+    my $source = Fey::DBIManager::Source->new(
+        dsn        => $DSN,
+        username   => $Username,
+        password   => $Password,
+        attributes => {
+            AutoCommit => 0,
+        },
+        auto_refresh => 0,
+        post_connect => $sub,
+    );
 
     my $dbh = $source->dbh();
 
@@ -169,48 +178,57 @@ EOF
 }
 
 {
-    my $source = Fey::DBIManager::Source->new( dsn => $DSN, name => 'another' );
+    my $source
+        = Fey::DBIManager::Source->new( dsn => $DSN, name => 'another' );
 
-    is( $source->name(), 'another',
-        'explicit name passed to constructor' );
+    is(
+        $source->name(), 'another',
+        'explicit name passed to constructor'
+    );
 }
 
 {
     my $source = Fey::DBIManager::Source->new( dsn => $DSN );
 
-    ok( ! $source->allows_nested_transactions(),
-        'source allows nested transactions is false by default with DBD::Mock' );
+    ok(
+        !$source->allows_nested_transactions(),
+        'source allows nested transactions is false by default with DBD::Mock'
+    );
 
-    ok( $source->dbh()->{AutoCommit},
-        'AutoCommit is true after checking allows_nested_transactions' );
+    ok(
+        $source->dbh()->{AutoCommit},
+        'AutoCommit is true after checking allows_nested_transactions'
+    );
 }
 
 {
     my $source = Fey::DBIManager::Source->new( dsn => $DSN );
 
     no warnings 'redefine', 'once';
-    local *DBD::Mock::db::begin_work = sub {};
-    local *DBD::Mock::db::rollback   = sub {};
+    local *DBD::Mock::db::begin_work = sub { };
+    local *DBD::Mock::db::rollback   = sub { };
 
-    ok( $source->allows_nested_transactions(),
-        'source allows nested transactions is true' );
+    ok(
+        $source->allows_nested_transactions(),
+        'source allows nested transactions is true'
+    );
 }
 
 {
     my %attr = Fey::DBIManager::Source->_required_dbh_attributes();
     my %bad_attr;
 
-    $bad_attr{$_} = $attr{$_} ? 0 : 1
-        for keys %attr;
+    $bad_attr{$_} = $attr{$_} ? 0 : 1 for keys %attr;
 
     my $dbh = DBI->connect( $DSN, '', '', \%bad_attr );
     my $source = Fey::DBIManager::Source->new( dsn => $DSN, dbh => $dbh );
 
-    for my $k ( sort keys %attr )
-    {
+    for my $k ( sort keys %attr ) {
         my $actual_val = $source->dbh()->{$k};
-        ok( ( $attr{$k} ? $actual_val : ! $actual_val ),
-            "DBI attribute $k is set to required value for Source" );
+        ok(
+            ( $attr{$k} ? $actual_val : !$actual_val ),
+            "DBI attribute $k is set to required value for Source"
+        );
     }
 }
 
@@ -219,47 +237,58 @@ SKIP:
     skip 'These tests require Test::Output', 2
         unless eval "use Test::Output; 1";
 
-    stderr_is( sub { ok( ! Fey::DBIManager::Source
-                               ->new( dsn => $DSN )
-                               ->allows_nested_transactions(),
-                         'DBD::Mock does not support nested transactions' ) },
-               '',
-               'no warnings checking for nested transaction support with DBD::Mock' );
+    stderr_is(
+        sub {
+            ok(
+                !Fey::DBIManager::Source->new( dsn => $DSN )
+                    ->allows_nested_transactions(),
+                'DBD::Mock does not support nested transactions'
+            );
+        },
+        '',
+        'no warnings checking for nested transaction support with DBD::Mock'
+    );
 }
 
-sub test_dbh
-{
+sub test_dbh {
     my $dbh          = shift;
     my $post_connect = shift;
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
     isa_ok( $dbh, 'DBI::db' );
-    is( $dbh->{Name}, 'foo',
-        'db name passed to DBI->connect() is same as the one passed to new()' );
-    is( $dbh->{Username}, $Username,
-        'username passed to DBI->connect() is same as the one passed to new()' );
-    is( $post_connect, $dbh,
-        'post_connect sub was called with DBI handle as argument' );
+    is(
+        $dbh->{Name}, 'foo',
+        'db name passed to DBI->connect() is same as the one passed to new()'
+    );
+    is(
+        $dbh->{Username}, $Username,
+        'username passed to DBI->connect() is same as the one passed to new()'
+    );
+    is(
+        $post_connect, $dbh,
+        'post_connect sub was called with DBI handle as argument'
+    );
 
     check_attributes($dbh);
 }
 
-sub check_attributes
-{
+sub check_attributes {
     my $dbh = shift;
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    my %expect = ( AutoCommit         => 1,
-                   RaiseError         => 1,
-                   PrintError         => 0,
-                   PrintWarn          => 1,
-                   ShowErrorStatement => 1,
-                 );
-    for my $k ( sort keys %expect )
-    {
-        ok( ( $expect{$k} ? $dbh->{$k} : ! $dbh->{$k} ),
-            "$k should be " . ( $expect{$k} ? 'true' : 'false' ) );
+    my %expect = (
+        AutoCommit         => 1,
+        RaiseError         => 1,
+        PrintError         => 0,
+        PrintWarn          => 1,
+        ShowErrorStatement => 1,
+    );
+    for my $k ( sort keys %expect ) {
+        ok(
+            ( $expect{$k} ? $dbh->{$k} : !$dbh->{$k} ),
+            "$k should be " . ( $expect{$k} ? 'true' : 'false' )
+        );
     }
 }

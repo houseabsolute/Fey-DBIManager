@@ -11,102 +11,100 @@ use MooseX::SemiAffordanceAccessor;
 use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 
-has 'name' =>
-    ( is      => 'ro',
-      isa     => 'Str',
-      default => 'default',
-    );
+has 'name' => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => 'default',
+);
 
-has 'dbh' =>
-    ( is         => 'rw',
-      isa        => 'DBI::db',
-      reader     => '_dbh',
-      writer     => '_set_dbh',
-      clearer    => '_unset_dbh',
-      predicate  => '_has_dbh',
-      lazy_build => 1,
-    );
+has 'dbh' => (
+    is         => 'rw',
+    isa        => 'DBI::db',
+    reader     => '_dbh',
+    writer     => '_set_dbh',
+    clearer    => '_unset_dbh',
+    predicate  => '_has_dbh',
+    lazy_build => 1,
+);
 
-after '_unset_dbh' =>
-    sub { $_[0]->_clear_allows_nested_transactions() };
+after '_unset_dbh' => sub { $_[0]->_clear_allows_nested_transactions() };
 
-has 'dsn' =>
-    ( is        => 'rw',
-      isa       => 'Str',
-      predicate => '_has_dsn',
-      writer    => '_set_dsn',
-      required  => 1,
-    );
+has 'dsn' => (
+    is        => 'rw',
+    isa       => 'Str',
+    predicate => '_has_dsn',
+    writer    => '_set_dsn',
+    required  => 1,
+);
 
-has 'username' =>
-    ( is      => 'ro',
-      isa     => 'Str',
-      default => '',
-    );
+has 'username' => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => '',
+);
 
-has 'password' =>
-    ( is      => 'ro',
-      isa     => 'Str',
-      default => '',
-    );
+has 'password' => (
+    is      => 'ro',
+    isa     => 'Str',
+    default => '',
+);
 
-has 'attributes' =>
-    ( is      => 'rw',
-      isa     => 'HashRef',
-      writer  => '_set_attributes',
-      default => sub { {} },
-    );
+has 'attributes' => (
+    is      => 'rw',
+    isa     => 'HashRef',
+    writer  => '_set_attributes',
+    default => sub { {} },
+);
 
-has 'post_connect' =>
-    ( is  => 'ro',
-      isa => 'CodeRef',
-    );
+has 'post_connect' => (
+    is  => 'ro',
+    isa => 'CodeRef',
+);
 
-has 'auto_refresh' =>
-    ( is      => 'ro',
-      isa     => 'Bool',
-      default => 1,
-    );
+has 'auto_refresh' => (
+    is      => 'ro',
+    isa     => 'Bool',
+    default => 1,
+);
 
-has 'allows_nested_transactions' =>
-    ( is         => 'ro',
-      isa        => 'Bool',
-      lazy_build => 1,
-      clearer    => '_clear_allows_nested_transactions',
-    );
+has 'allows_nested_transactions' => (
+    is         => 'ro',
+    isa        => 'Bool',
+    lazy_build => 1,
+    clearer    => '_clear_allows_nested_transactions',
+);
 
-has '_threaded' =>
-    ( is         => 'ro',
-      isa        => 'Bool',
-      lazy_build => 1,
-      init_arg   => undef,
-    );
+has '_threaded' => (
+    is         => 'ro',
+    isa        => 'Bool',
+    lazy_build => 1,
+    init_arg   => undef,
+);
 
-has '_pid' =>
-    ( is       => 'rw',
-      isa      => 'Num',
-      init_arg => undef,
-    );
+has '_pid' => (
+    is       => 'rw',
+    isa      => 'Num',
+    init_arg => undef,
+);
 
-has '_tid' =>
-    ( is       => 'rw',
-      isa      => 'Num',
-      init_arg => undef,
-    );
+has '_tid' => (
+    is       => 'rw',
+    isa      => 'Num',
+    init_arg => undef,
+);
 
-
-sub BUILD
-{
+sub BUILD {
     my $self   = shift;
     my $params = shift;
 
-    $self->_set_attributes( { %{ $self->attributes() },
-                              $self->_required_dbh_attributes(),
-                            }
-                          );
+    $self->_set_attributes(
+        {
+            %{ $self->attributes() },
+            $self->_required_dbh_attributes(),
+        }
+    );
 
-    if ( $self->_has_dbh() )
-    {
+    if ( $self->_has_dbh() ) {
         $self->_set_pid_tid();
         $self->_apply_required_dbh_attributes();
     }
@@ -114,30 +112,27 @@ sub BUILD
     return $self;
 }
 
-sub _required_dbh_attributes
-{
-    return ( AutoCommit         => 1,
-             RaiseError         => 1,
-             PrintError         => 0,
-             PrintWarn          => 1,
-             ShowErrorStatement => 1,
-           );
+sub _required_dbh_attributes {
+    return (
+        AutoCommit         => 1,
+        RaiseError         => 1,
+        PrintError         => 0,
+        PrintWarn          => 1,
+        ShowErrorStatement => 1,
+    );
 }
 
-sub _apply_required_dbh_attributes
-{
+sub _apply_required_dbh_attributes {
     my $self = shift;
 
     my %attr = $self->_required_dbh_attributes();
 
-    for my $k ( sort keys %attr )
-    {
+    for my $k ( sort keys %attr ) {
         $self->dbh()->{$k} = $attr{$k};
     }
 }
 
-sub dbh
-{
+sub dbh {
     my $self = shift;
 
     $self->_ensure_fresh_dbh() if $self->auto_refresh();
@@ -145,20 +140,18 @@ sub dbh
     return $self->_dbh();
 }
 
-sub _build_dbh
-{
+sub _build_dbh {
     my $self = shift;
 
-    my $dbh =
-        DBI->connect
-            ( $self->dsn(), $self->username(),
-              $self->password(), $self->attributes() );
+    my $dbh = DBI->connect(
+        $self->dsn(),      $self->username(),
+        $self->password(), $self->attributes()
+    );
 
     $self->_set_pid_tid();
 
-    if ( my $pc = $self->post_connect() )
-    {
-        $pc->( $dbh );
+    if ( my $pc = $self->post_connect() ) {
+        $pc->($dbh);
     }
 
     $self->_set_dbh($dbh);
@@ -166,49 +159,46 @@ sub _build_dbh
     return $self->_dbh();
 }
 
-sub _build_allows_nested_transactions
-{
+sub _build_allows_nested_transactions {
     my $self = shift;
 
     my $dbh = $self->dbh();
 
-    my $allows_nested =
-        eval
-        {
-            # This error comes from DBI in its default implementation
-            # of begin_work(). There didn't seem to be a way to shut
-            # this off (setting PrintWarn to false does not do it, and
-            # setting Warn to false does not stop it for all drivers,
-            # either). Hopefully the message text won't change.
-            #
-            # The variant is for DBD::Mock, which has a slightly
-            # different version of the text.
-            local $SIG{__WARN__}
-                = sub { warn @_ unless $_[0] =~ /Already (?:with)?in a transaction/i
-                                    || $_[0] =~ /rollback ineffective/ };
+    my $allows_nested = eval {
 
-            $dbh->begin_work();
-            $dbh->begin_work();
-            $dbh->rollback();
-            $dbh->rollback();
-            1;
+        # This error comes from DBI in its default implementation
+        # of begin_work(). There didn't seem to be a way to shut
+        # this off (setting PrintWarn to false does not do it, and
+        # setting Warn to false does not stop it for all drivers,
+        # either). Hopefully the message text won't change.
+        #
+        # The variant is for DBD::Mock, which has a slightly
+        # different version of the text.
+        local $SIG{__WARN__} = sub {
+            warn @_
+                unless $_[0] =~ /Already (?:with)?in a transaction/i
+                    || $_[0] =~ /rollback ineffective/;
         };
 
-    if ($@)
-    {
+        $dbh->begin_work();
+        $dbh->begin_work();
+        $dbh->rollback();
+        $dbh->rollback();
+        1;
+    };
+
+    if ($@) {
         $dbh->rollback() unless $dbh->{AutoCommit};
     }
 
     return $allows_nested;
 }
 
-sub _build__threaded
-{
+sub _build__threaded {
     return threads->can('tid') ? 1 : 0;
 }
 
-sub _set_pid_tid
-{
+sub _set_pid_tid {
     my $self = shift;
 
     $self->_set_pid($$);
@@ -217,30 +207,24 @@ sub _set_pid_tid
 
 # The logic in this method is largely borrowed from
 # DBIx::Class::Storage::DBI.
-sub _ensure_fresh_dbh
-{
+sub _ensure_fresh_dbh {
     my $self = shift;
 
     my $dbh = $self->_dbh();
-    if ( $self->_pid() != $$ )
-    {
+    if ( $self->_pid() != $$ ) {
         $dbh->{InactiveDestroy} = 1;
         $dbh->disconnect();
         $self->_unset_dbh();
     }
 
-    if ( $self->_threaded()
-         &&
-         $self->_tid() != threads->tid()
-       )
-    {
+    if (   $self->_threaded()
+        && $self->_tid() != threads->tid() ) {
         $dbh->disconnect();
         $self->_unset_dbh();
     }
 
     # Maybe consider only pinging once ever X seconds/minutes?
-    unless ( $dbh->{Active} && $dbh->ping() )
-    {
+    unless ( $dbh->{Active} && $dbh->ping() ) {
         $dbh->disconnect();
         $self->_unset_dbh();
     }

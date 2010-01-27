@@ -16,76 +16,71 @@ use MooseX::AttributeHelpers;
 use MooseX::StrictConstructor;
 use Moose::Util::TypeConstraints;
 
-has _sources =>
-    ( metaclass => 'Collection::Hash',
-      is        => 'ro',
-      isa       => 'HashRef[Fey::DBIManager::Source]',
-      default   => sub { {} },
-      init_arg  => undef,
-      provides  => { get    => 'get_source',
-                     set    => 'add_source',
-                     delete => 'remove_source',
-                     count  => '_source_count',
-                     exists => 'has_source',
-                     values => 'sources',
-                   },
-    );
+has _sources => (
+    metaclass => 'Collection::Hash',
+    is        => 'ro',
+    isa       => 'HashRef[Fey::DBIManager::Source]',
+    default   => sub { {} },
+    init_arg  => undef,
+    provides  => {
+        get    => 'get_source',
+        set    => 'add_source',
+        delete => 'remove_source',
+        count  => '_source_count',
+        exists => 'has_source',
+        values => 'sources',
+    },
+);
 
-around 'add_source' =>
-    sub { my $orig   = shift;
-          my $self   = shift;
-
-          my $source;
-          if ( @_ > 1 )
-          {
-              $source = Fey::DBIManager::Source->new(@_);
-          }
-          else
-          {
-              $source = shift;
-          }
-
-          my $name;
-          if ( blessed $source && $source->can('name') )
-          {
-              $name = $source->name();
-
-              param_error qq{You already have a source named "$name".}
-                  if $self->has_source($name);
-          }
-
-          my $return = $self->$orig( $name => $source );
-
-          return $return;
-        };
-
-sub default_source
-{
+around 'add_source' => sub {
+    my $orig = shift;
     my $self = shift;
 
-    if ( $self->_source_count() == 0 )
-    {
-        object_state_error 'This manager has no default source because it has no sources at all.';
+    my $source;
+    if ( @_ > 1 ) {
+        $source = Fey::DBIManager::Source->new(@_);
     }
-    elsif ( $self->_source_count() == 1 )
-    {
+    else {
+        $source = shift;
+    }
+
+    my $name;
+    if ( blessed $source && $source->can('name') ) {
+        $name = $source->name();
+
+        param_error qq{You already have a source named "$name".}
+            if $self->has_source($name);
+    }
+
+    my $return = $self->$orig( $name => $source );
+
+    return $return;
+};
+
+sub default_source {
+    my $self = shift;
+
+    if ( $self->_source_count() == 0 ) {
+        object_state_error
+            'This manager has no default source because it has no sources at all.';
+    }
+    elsif ( $self->_source_count() == 1 ) {
+
         # Need to force scalar context for the return value
         return ( $self->sources() )[0];
     }
-    elsif ( my $source = $self->get_source('default') )
-    {
+    elsif ( my $source = $self->get_source('default') ) {
         return $source;
     }
-    else
-    {
-        object_state_error 'This manager has multiple sources, but none are named "default".';
+    else {
+        object_state_error
+            'This manager has multiple sources, but none are named "default".';
     }
 
     return;
 }
 
-sub source_for_sql
-{
+sub source_for_sql {
     my $self = shift;
 
     return $self->default_source();
