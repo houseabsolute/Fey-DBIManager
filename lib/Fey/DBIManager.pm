@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 use Fey::Exceptions qw( object_state_error param_error );
 use Scalar::Util qw( blessed );
