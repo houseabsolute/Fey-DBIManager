@@ -9,8 +9,8 @@ my $builder = Module::Build->new(
     requires    => {
         'Fey'                            => '0.12',
         'Moose'                          => '0.90',
-        'MooseX::StrictConstructor'      => '0.07',
-        'MooseX::SemiAffordanceAccessor' => '0.03',
+        'MooseX::StrictConstructor'      => '0.08',
+        'MooseX::SemiAffordanceAccessor' => '0.05',
         'namespace::autoclean'           => '0',
     },
     build_requires => {
