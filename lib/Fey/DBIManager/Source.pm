@@ -230,17 +230,17 @@ sub _ensure_fresh_dbh {
     my $dbh = $self->_dbh();
     if ( $self->_pid() != $$ ) {
         $dbh->{InactiveDestroy} = 1;
-        $dbh->disconnect();
         $self->_unset_dbh();
+        undef $dbh;
     }
 
     if (   $self->_threaded()
         && $self->_tid() != threads->tid() ) {
-        $dbh->disconnect();
         $self->_unset_dbh();
+        undef $dbh;
     }
 
-    unless ( $dbh->{Active} && $self->_ping_dbh() ) {
+    if ( $dbh && !( $dbh->{Active} && $self->_ping_dbh() ) ) {
         $dbh->disconnect();
         $self->_unset_dbh();
     }
