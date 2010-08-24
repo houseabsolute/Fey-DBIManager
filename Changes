@@ -1,3 +1,8 @@
+0.12    2010-08-24
+
+- The handling of forking and threading was broken, and is now fixed.
+
+
 0.11    2010-01-27
 
 - Implemented a ping_interval attribute for sources. This defaults to 60
