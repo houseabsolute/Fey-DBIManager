@@ -411,10 +411,9 @@ $source->dbh() >> incurs the cost of a "freshness" check. The upside
 of this is that it will just work in the face of forks, threading, and
 lost connections.
 
-First, we check to see if the pid has changed since the handle was
-created. If it has, we set C<InactiveDestroy> to true in the handle
-and disconnect it. If the thread has changed, we just disconnect the
-handle.
+First, we check to see if the pid has changed since the handle was created. If
+it has, we set C<InactiveDestroy> to true in the handle before making a new
+handle. If the thread has changed, we just make a new handle.
 
 Next, we check C<< $dbh->{Active] >> and, if this is false, we
 disconnect the handle.
