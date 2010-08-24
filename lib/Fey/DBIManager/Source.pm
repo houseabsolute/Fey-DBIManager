@@ -3,6 +3,7 @@ package Fey::DBIManager::Source;
 use strict;
 use warnings;
 use namespace::autoclean;
+use namespace::autoclean;
 
 our $VERSION = '0.11';
 
@@ -265,8 +266,6 @@ sub _ping_dbh {
         return 0;
     }
 }
-
-no Moose;
 
 __PACKAGE__->meta()->make_immutable();
 
