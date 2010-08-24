@@ -5,8 +5,6 @@ use warnings;
 use namespace::autoclean;
 use namespace::autoclean;
 
-our $VERSION = '0.11';
-
 use DBI;
 use Fey::Exceptions qw( param_error );
 
@@ -271,11 +269,9 @@ __PACKAGE__->meta()->make_immutable();
 
 1;
 
+# ABSTRACT: Wraps a single DBI handle
+
 __END__
-
-=head1 NAME
-
-Fey::DBIManager::Source - Wraps a single DBI handle
 
 =head1 SYNOPSIS
 
@@ -431,22 +427,11 @@ handle.
 
 If the handle is not fresh, a new one is created.
 
-=head1 AUTHOR
-
-Dave Rolsky, <autarch@urth.org>
-
 =head1 BUGS
 
 Please report any bugs or feature requests to
 C<bug-fey-dbimanager@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2006-2010 Dave Rolsky, All Rights Reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
 
 =cut
