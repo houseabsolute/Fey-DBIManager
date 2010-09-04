@@ -233,6 +233,58 @@ EOF
     }
 }
 
+{
+    my $connect = 0;
+
+    my %p = (
+        name         => 'foo',
+        dsn          => $DSN,
+        username     => 'foo',
+        password     => 'bar',
+        attributes   => { foo => 42 },
+        post_connect => sub { $connect++ },
+    );
+
+    my $source = Fey::DBIManager::Source->new(%p);
+
+    $source->dbh(); # force the creation of a handle
+
+    ok( $source->_has_dbh(), 'source does have a handle' );
+
+    my $clone = $source->clone();
+
+    for my $attr (qw( dsn username password attributes )) {
+        is_deeply(
+            $source->$attr(), $clone->$attr(),
+            "original and clone share the same $attr"
+        );
+    }
+
+    ok( ! $clone->_has_dbh(), 'clone does not have a handle yet' );
+
+    is(
+        $clone->name(), 'Clone of foo',
+        'name is Clone of foo'
+    );
+
+    isnt(
+        $source->dbh(), $clone->dbh(),
+        'original and clone have different handles'
+    );
+
+    is(
+        $connect, 2,
+        'post_connect sub has been called twice'
+    );
+
+    my $clone2 = $source->clone( name => 'bar' );
+
+    is(
+        $clone2->name(), 'bar',
+        'can pass args to clone()'
+    );
+}
+
 SKIP:
 {
     skip 'These tests require Test::Output', 2

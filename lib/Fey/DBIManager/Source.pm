@@ -127,6 +127,20 @@ sub BUILD {
     return $self;
 }
 
+sub clone {
+    my $self = shift;
+
+    my %p = map { $_ => $self->$_() }
+        grep { defined $self->$_() }
+        qw( dsn username password attributes post_connect auto_refresh );
+
+    return ( ref $self )->new(
+        name => 'Clone of ' . $self->name(),
+        %p,
+        @_,
+    );
+}
+
 sub _required_dbh_attributes {
     return (
         AutoCommit         => 1,
@@ -384,6 +398,15 @@ Returns a boolean indicating whether or not the database to which the
 source connects supports nested transactions. It does this by trying
 to issue two calls to C<< $dbh->begin_work() >> followed by two calls
 to C<< $dbh->rollback() >> (in an eval block).
+
+=head2 $source->clone(...)
+
+Returns a new source which is a clone of the original. If no name is provided,
+it is created as "Clone of <original name>". The cloned source I<does not>
+share the original's database handle.
+
+Any arguments passed to this method are passed to the constructor when
+creating the clone.
 
 =head1 REQUIRED ATTRIBUTES
 
