@@ -1,3 +1,9 @@
+0.13    2010-09-04
+
+- Add a clone() method to Fey::DBIManager::Source objects. This is handy if
+  you need to create multiple connections to the same dbms.
+
+
 0.12    2010-08-24
 
 - The handling of forking and threading was broken, and is now fixed.
