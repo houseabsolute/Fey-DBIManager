@@ -1,3 +1,8 @@
+0.14    2010-09-10
+
+- Added missing dep on Fey::Test. Reported by Phillip Moore. RT #61246.
+
+
 0.13    2010-09-04
 
 - Add a clone() method to Fey::DBIManager::Source objects. This is handy if
