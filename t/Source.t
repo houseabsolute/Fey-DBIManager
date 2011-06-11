@@ -9,6 +9,8 @@ my $DSN      = 'dbi:Mock:foo';
 my $Username = 'user';
 my $Password = 'password';
 
+my $can_modify_pid = eval { local $$ = $$ + 1; 1 };
+
 {
     my $source = Fey::DBIManager::Source->new( dsn => $DSN );
 
@@ -98,15 +100,24 @@ EOF
 
     is( $count, 1, 'one DBI handle made so far' );
 
-    local $$ = $$ + 1;
-    $source->_ensure_fresh_dbh();
+ SKIP:
+    {
+        skip 'Cannot modify $$ on this platform', 2,
+            unless $can_modify_pid;
 
-    ok( $dbh->{InactiveDestroy}, 'InactiveDestroy was set to true' );
+        local $$ = $$ + 1;
+        $source->_ensure_fresh_dbh();
 
-    $dbh = $source->dbh();
-    test_dbh( $dbh, $post_connect );
+        ok( $dbh->{InactiveDestroy}, 'InactiveDestroy was set to true' );
 
-    is( $count, 2, 'new handle made when pid changes' );
+        $dbh = $source->dbh();
+        test_dbh( $dbh, $post_connect );
+
+        is( $count, 2, 'new handle made when pid changes' );
+    }
+
+    # Need to do this since pid just changed again.
+    $source->_unset_dbh(); $source->dbh();
 
     $threads::tid++;
     $source->_ensure_fresh_dbh();
@@ -116,15 +127,15 @@ EOF
     $dbh = $source->dbh();
     test_dbh( $dbh, $post_connect );
 
-    is( $count, 3, 'new handle made when tid changes' );
+    is( $count, 4, 'new handle made when tid changes' );
 
     $source->_ensure_fresh_dbh();
-    is( $count, 3, 'no new handle made with same pid & tid' );
+    is( $count, 4, 'no new handle made with same pid & tid' );
 
     $dbh->{mock_can_connect} = 0;
     $source->_ensure_fresh_dbh();
 
-    is( $count, 4, 'new handle made when Active is false' );
+    is( $count, 5, 'new handle made when Active is false' );
 
     $dbh = $source->dbh();
 
@@ -133,7 +144,7 @@ EOF
     local *DBD::Mock::db::ping = sub { return 0 };
 
     $source->_ensure_fresh_dbh();
-    is( $count, 5, 'new handle made when ping returns false' );
+    is( $count, 6, 'new handle made when ping returns false' );
 }
 
 {
@@ -155,10 +166,16 @@ EOF
 
     is( $count, 1, 'one DBI handle made so far' );
 
-    local $$ = $$ + 1;
-    $dbh = $source->dbh();
+ SKIP:
+    {
+        skip 'Cannot modify $$ on this platform', 1,
+            unless $can_modify_pid;
 
-    is( $count, 1, 'no new handle when pid changes' );
+        local $$ = $$ + 1;
+        $dbh = $source->dbh();
+
+        is( $count, 1, 'no new handle when pid changes' );
+    }
 
     $threads::tid++;
     $dbh = $source->dbh();
