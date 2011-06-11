@@ -1,3 +1,8 @@
+{{$NEXT}}
+
+- Tests assumed that $$ can be modified, which doesn't work on every platform.
+
+
 0.14    2010-09-10
 
 - Added missing dep on Fey::Test. Reported by Phillip Moore. RT #61246.
