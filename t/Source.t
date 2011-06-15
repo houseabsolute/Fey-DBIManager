@@ -98,7 +98,9 @@ EOF
 
     test_dbh( $dbh, $post_connect );
 
-    is( $count, 1, 'one DBI handle made so far' );
+    my $expect_count = 1;
+
+    is( $count, $expect_count, 'one DBI handle made so far' );
 
  SKIP:
     {
@@ -113,11 +115,15 @@ EOF
         $dbh = $source->dbh();
         test_dbh( $dbh, $post_connect );
 
-        is( $count, 2, 'new handle made when pid changes' );
+        $expect_count++;
+
+        is( $count, $expect_count, 'new handle made when pid changes' );
     }
 
     # Need to do this since pid just changed again.
     $source->_unset_dbh(); $source->dbh();
+
+    $expect_count++;
 
     $threads::tid++;
     $source->_ensure_fresh_dbh();
@@ -127,15 +133,19 @@ EOF
     $dbh = $source->dbh();
     test_dbh( $dbh, $post_connect );
 
-    is( $count, 4, 'new handle made when tid changes' );
+    $expect_count++;
+
+    is( $count, $expect_count, 'new handle made when tid changes' );
 
     $source->_ensure_fresh_dbh();
-    is( $count, 4, 'no new handle made with same pid & tid' );
+    is( $count, $expect_count, 'no new handle made with same pid & tid' );
 
     $dbh->{mock_can_connect} = 0;
     $source->_ensure_fresh_dbh();
 
-    is( $count, 5, 'new handle made when Active is false' );
+    $expect_count++;
+
+    is( $count, $expect_count, 'new handle made when Active is false' );
 
     $dbh = $source->dbh();
 
@@ -144,7 +154,10 @@ EOF
     local *DBD::Mock::db::ping = sub { return 0 };
 
     $source->_ensure_fresh_dbh();
-    is( $count, 6, 'new handle made when ping returns false' );
+
+    $expect_count++;
+
+    is( $count, $expect_count, 'new handle made when ping returns false' );
 }
 
 {
