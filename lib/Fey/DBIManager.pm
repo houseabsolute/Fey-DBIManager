@@ -103,7 +103,7 @@ __END__
 
 =head1 DESCRIPTION
 
-C<Fey::DBIManager> manager a set of L<Fey::DBIManager::Source>
+C<Fey::DBIManager> manages a set of L<Fey::DBIManager::Source>
 objects, each of which in turn represents a single C<DBI> handle.
 
 It's main purpose is to provide a single interface to one or more data
